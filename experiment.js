@@ -52,8 +52,9 @@ const participant_info = {
 
 const unlock_audio = {
   type: jsPsychHtmlKeyboardResponse,
-  stimulus: "<p>Appuyez sur une touche pour activer l’audio.</p>"
+  stimulus: "<p>Appuyez sur n’importe quelle touche du clavier pour activer l’audio.</p>"
 };
+
 
 const instructions = {
   type: jsPsychHtmlKeyboardResponse,
