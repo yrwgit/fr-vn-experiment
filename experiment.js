@@ -1,20 +1,8 @@
-/*************************************************************
- *  EXPÉRIENCE ABX – jsPsych
- *  Collecte automatique vers Google Apps Script
- *************************************************************/
-
-/* ==========================================================
-   🔴 🔴 🔴 ÉTAPE 1 — ICI : COLLER TON LIEN GOOGLE SCRIPT 🔴 🔴 🔴
-   ========================================================== */
 
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx_14EQfLDzNXf6cWppZvFoo6SfpEpRAZCH9SNx31degMFvUB3ZJqiJSFAJiCsBpr_g/exec";
 // ⬆️⬆️⬆️ REMPLACE UNIQUEMENT CETTE LIGNE ⬆️⬆️⬆️
 // (l’URL doit ABSOLUMENT se terminer par /exec)
-
-/* ==========================================================
-   INITIALISATION jsPsych
-   ========================================================== */
 
 const jsPsych = initJsPsych({
   on_finish: () => {
@@ -42,9 +30,7 @@ const jsPsych = initJsPsych({
   }
 });
 
-/* ==========================================================
-   SURVEY PARTICIPANT
-   ========================================================== */
+
 
 const participant_info = {
   type: jsPsychSurveyHtmlForm,
@@ -65,32 +51,33 @@ const participant_info = {
   }
 };
 
-/* ==========================================================
-   DÉVERROUILLAGE AUDIO (OBLIGATOIRE navigateur)
-   ========================================================== */
 
 const unlock_audio = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: "<p>Appuyez sur une touche pour activer l’audio.</p>"
 };
 
-/* ==========================================================
-   INSTRUCTIONS
-   ========================================================== */
 
-const instructions = {
-  type: jsPsychHtmlKeyboardResponse,
+let instructions = {
+  type: jsPsychHtmlButtonResponse,
   stimulus: `
-    <p>Vous allez entendre trois sons : A, B, puis X.</p>
-    <p>Appuyez sur <strong>F</strong> si X = A</p>
-    <p>Appuyez sur <strong>J</strong> si X = B</p>
-    <p>Appuyez sur une touche pour commencer.</p>
-  `
+    <div style="max-width:700px; margin:auto; font-family:Arial, sans-serif; line-height:1.6;">
+      <h1 style="text-align:center; color:#2c3e50;">Bienvenue dans l'expérience ABX</h1>
+      <p>Merci de participer à cette étude. Veuillez lire attentivement les consignes :</p>
+      <ul>
+        <li><strong>Casque audio :</strong> utilisez un casque pour écouter les sons.</li>
+        <li><strong>Environnement :</strong> réalisez l'expérience dans un endroit calme.</li>
+        <li><strong>Touches du clavier :</strong> F = A, J = B.</li>
+        <li><strong>Écoute attentive :</strong> écoutez chaque son avant de répondre.</li>
+        <li><strong>Stimuli :</strong> mots monosyllabiques.</li>
+        <li><strong>Pauses :</strong> deux pauses automatiques sont prévues.</li>
+      </ul>
+      <p style="text-align:center; font-style:italic;">Cliquez sur "Commencer" lorsque vous êtes prêt(e).</p>
+    </div>
+  `,
+  choices: ["Commencer"]
 };
 
-/* ==========================================================
-   FONCTION TRIAL ABX
-   ========================================================== */
 
 function ABX_trial(trial_number, A, B) {
 
@@ -133,18 +120,11 @@ function ABX_trial(trial_number, A, B) {
   ];
 }
 
-/* ==========================================================
-   FIN D’EXPÉRIENCE
-   ========================================================== */
 
 const end_screen = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: "<h2>Merci pour votre participation !</h2>"
 };
-
-/* ==========================================================
-   TIMELINE + CSV
-   ========================================================== */
 
 const timeline = [participant_info, unlock_audio, instructions];
 
