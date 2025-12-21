@@ -55,14 +55,25 @@ const unlock_audio = {
   stimulus: "<p>Appuyez sur une touche pour activer l’audio.</p>"
 };
 
-
 const instructions = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: `
-    <p>Vous allez entendre trois sons : A, B, puis X.</p>
-    <p>Appuyez sur <strong>F</strong> si X = A</p>
-    <p>Appuyez sur <strong>J</strong> si X = B</p>
-    <p>Appuyez sur une touche pour commencer.</p>
+    <div style="max-width:700px; margin:auto; font-family:Arial, sans-serif; line-height:1.6;">
+      <h2 style="text-align:center; color:#2c3e50;">Instructions de l'expérience ABX</h2>
+      <p>Vous allez entendre trois sons à chaque essai :</p>
+      <ol>
+        <li><strong>A</strong> — premier son</li>
+        <li><strong>B</strong> — deuxième son</li>
+        <li><strong>X</strong> — à comparer avec A ou B</li>
+      </ol>
+      <p>Tâche :</p>
+      <ul>
+        <li>Appuyez sur <strong>F</strong> si X = A</li>
+        <li>Appuyez sur <strong>J</strong> si X = B</li>
+      </ul>
+      <p><strong>Important :</strong> utilisez un casque et soyez dans un endroit calme.</p>
+      <p style="text-align:center; font-style:italic;">Appuyez sur une touche pour commencer.</p>
+    </div>
   `
 };
 
