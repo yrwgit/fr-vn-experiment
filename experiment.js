@@ -73,7 +73,7 @@ const instructions = {
         <li>Appuyez sur <strong>J</strong> si X = B</li>
       </ul>
       <p><strong>Important :</strong> utilisez un casque et soyez dans un endroit calme.</p>
-      <p style="text-align:center; font-style:italic;">Appuyez sur une touche pour commencer.</p>
+      <p style="text-align:center; font-style:italic;">Appuyez sur n’importe quelle touche du clavier pour commencer.</p>
     </div>
   `
 };
