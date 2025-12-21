@@ -59,25 +59,12 @@ const unlock_audio = {
 const instructions = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: `
-    <div style="max-width:700px; margin:auto; font-family:Arial, sans-serif; line-height:1.6;">
-      <h2 style="text-align:center; color:#2c3e50;">Instructions de l'expérience ABX</h2>
-      <p>Vous allez entendre trois sons à chaque essai :</p>
-      <ol>
-        <li><strong>A</strong> — le premier son</li>
-        <li><strong>B</strong> — le deuxième son</li>
-        <li><strong>X</strong> — le troisième son, à comparer avec A et B</li>
-      </ol>
-      <p>Votre tâche :</p>
-      <ul>
-        <li>Appuyez sur <strong>F</strong> si le son X correspond au son A</li>
-        <li>Appuyez sur <strong>J</strong> si le son X correspond au son B</li>
-      </ul>
-      <p><strong>Important :</strong> utilisez un casque audio et réalisez l'expérience dans un endroit calme pour bien entendre les sons.</p>
-      <p style="text-align:center; font-style:italic;">Appuyez sur n'importe quelle touche pour commencer.</p>
-    </div>
+    <p>Vous allez entendre trois sons : A, B, puis X.</p>
+    <p>Appuyez sur <strong>F</strong> si X = A</p>
+    <p>Appuyez sur <strong>J</strong> si X = B</p>
+    <p>Appuyez sur une touche pour commencer.</p>
   `
 };
-
 
 
 function ABX_trial(trial_number, A, B) {
