@@ -1,8 +1,6 @@
 
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx_14EQfLDzNXf6cWppZvFoo6SfpEpRAZCH9SNx31degMFvUB3ZJqiJSFAJiCsBpr_g/exec";
-// ⬆️⬆️⬆️ REMPLACE UNIQUEMENT CETTE LIGNE ⬆️⬆️⬆️
-// (l’URL doit ABSOLUMENT se terminer par /exec)
 
 
 const jsPsych = initJsPsych({
@@ -56,28 +54,52 @@ const unlock_audio = {
 };
 
 
-const instructions = {
+
+const instructions_es = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: `
     <div style="max-width:700px; margin:auto; font-family:Arial, sans-serif; line-height:1.6;">
-      <h2 style="text-align:center; color:#2c3e50;">Instructions de l'expérience ABX</h2>
-      <p>Vous allez entendre trois sons à chaque essai :</p>
+      <h2 style="text-align:center; color:#2c3e50;">Instrucciones del experimento ABX</h2>
+      <p>Vas a escuchar tres sonidos cortos A, B y X:</p>
       <ol>
-        <li><strong>A</strong> — premier son</li>
-        <li><strong>B</strong> — deuxième son</li>
-        <li><strong>X</strong> — à comparer avec A ou B</li>
+        <li><strong>A</strong>: primer sonido</li>
+        <li><strong>B</strong>: segundo sonido</li>
+        <li><strong>X</strong>: tercero sonido (comparar con A / B)</li>
       </ol>
-      <p>Tâche :</p>
+      <p>A y B son distintos. Tienes que elegir si X (el ultimo sonido) es el sonido A o B</p>
+      <p>ejemplo: (A) "lo" (B) "la" (X) "lo" => X = A o B?</p>
+      <p>Como hacer?</p>
       <ul>
-        <li>Appuyez sur <strong>F</strong> si X = A</li>
-        <li>Appuyez sur <strong>J</strong> si X = B</li>
+        <li>Tocar <strong>F</strong> si X=A</li>
+        <li>Tocar <strong>J</strong> si X=B</li>
       </ul>
-      <p><strong>Important :</strong> utilisez un casque et soyez dans un endroit calme.</p>
-      <p style="text-align:center; font-style:italic;">Appuyez sur n’importe quelle touche du clavier pour commencer.</p>
+      <p><strong>importante:</strong> usar un caso y estar en un lugar silencioso</p>
+      <p style="text-align:center; font-style:italic;">tocar cualquiera tecla del teclado para empezar</p>
     </div>
   `
 };
 
+// const instructions = {
+//   type: jsPsychHtmlKeyboardResponse,
+//   stimulus: `
+//     <div style="max-width:700px; margin:auto; font-family:Arial, sans-serif; line-height:1.6;">
+//       <h2 style="text-align:center; color:#2c3e50;">Instructions de l'expérience ABX</h2>
+//       <p>Vous allez entendre trois sons à chaque essai :</p>
+//       <ol>
+//         <li><strong>A</strong> — premier son</li>
+//         <li><strong>B</strong> — deuxième son</li>
+//         <li><strong>X</strong> — à comparer avec A ou B</li>
+//       </ol>
+//       <p>Tâche :</p>
+//       <ul>
+//         <li>Appuyez sur <strong>F</strong> si X = A</li>
+//         <li>Appuyez sur <strong>J</strong> si X = B</li>
+//       </ul>
+//       <p><strong>Important :</strong> utilisez un casque et soyez dans un endroit calme.</p>
+//       <p style="text-align:center; font-style:italic;">Appuyez sur n’importe quelle touche du clavier pour commencer.</p>
+//     </div>
+//   `
+// };
 
 function ABX_trial(trial_number, A, B) {
 
@@ -127,7 +149,7 @@ const end_screen = {
 };
 
 
-const timeline = [participant_info, unlock_audio, instructions];
+const timeline = [participant_info, unlock_audio, instructions_es];
 
 fetch("stimuli.csv")
   .then(r => r.text())
