@@ -116,25 +116,28 @@ function ABX_trial(trial_number, A, B) {
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
 
-  const isi = 600;  // was 400, now 600 ms
+  const isi = 600;  // A/B/X spacing
 
   const makeAudioTrial = (filename, choices="NO_KEYS", prompt=null, on_finish_cb=null) => ({
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${filename}`,
     choices: choices,
     trial_ends_after_audio: true,
-    post_trial_gap: isi,
+
+    post_trial_gap: isi + 50, // 50 ms extra buffer
+
     prompt: prompt,
 
-    on_start: async () => {
-      await resumeAudio();                  // ensure AudioContext is active
-      await new Promise(r => setTimeout(r, 50)); // small 50 ms delay before playback
+    on_start: () => {
+      const ctx = jsPsych.pluginAPI.audioContext();
+      if (ctx && ctx.state === "suspended") ctx.resume();
     },
 
     on_finish: data => {
       const ctx = jsPsych.pluginAPI.audioContext();
-      if (ctx && ctx._buffers) ctx._buffers.forEach(b => b=null);
-
+      if (ctx && ctx._buffers) {
+        try { ctx._buffers.forEach(b => b=null); } catch(e) {}
+      }
       if (on_finish_cb) on_finish_cb(data);
     }
   });
@@ -150,6 +153,7 @@ function ABX_trial(trial_number, A, B) {
   ];
 }
 
+
   return [
     makeAudioTrial(A),
     makeAudioTrial(B),
@@ -160,6 +164,7 @@ function ABX_trial(trial_number, A, B) {
     })
   ];
 }
+
 
 const timeline = [participant_info, unlock_audio, instructions_es];
 
