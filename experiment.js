@@ -112,7 +112,7 @@ function ABX_trial(trial_number, A, B) {
     choices: ["f","j"],
     trial_ends_after_audio: false,          
     response_allowed_while_playing: true,   
-    trial_duration: 6000, 
+    trial_duration: 10000, 
     post_trial_gap: isi,
     prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
     on_start: () => resumeAudio(),
