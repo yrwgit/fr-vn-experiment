@@ -50,7 +50,11 @@ const participant_info = {
 // Unlock audio
 const unlock_audio = {
   type: jsPsychHtmlKeyboardResponse,
-  stimulus: "<p>Appuyez sur n’importe quelle touche du clavier pour activer l’audio.</p>"
+  stimulus: "<p>Appuyez sur une touche pour activer l’audio.</p>",
+  on_finish: () => {
+    const ctx = jsPsych.pluginAPI.audioContext();
+    if(ctx && ctx.state === "suspended") ctx.resume(); 
+  }
 };
 
 // Instructions (Spanish example)
@@ -93,7 +97,7 @@ function ABX_trial(trial_number, A, B) {
   const X_is_A = Math.random() < 0.5;
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
-  const isi = 600;
+  const isi = 300;
 
   const trialA = {
     type: jsPsychAudioKeyboardResponse,
@@ -101,7 +105,7 @@ function ABX_trial(trial_number, A, B) {
     choices: "NO_KEYS",
     trial_ends_after_audio: true,
     post_trial_gap: isi,
-    on_start: () => resumeAudio()
+    on_start: () => resumeAudio() 
   };
 
   const trialB = {
@@ -118,17 +122,10 @@ function ABX_trial(trial_number, A, B) {
     stimulus: `audio/${X}`,
     choices: ["f","j"],
     trial_ends_after_audio: true,
+    trial_duration: 4000,
     post_trial_gap: isi,
     prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
-    on_start: () => {
-      resumeAudio();
-      jsPsych.pluginAPI.setTimeout(() => {
-        const lastData = jsPsych.data.get().last(1).values()[0];
-        if(!lastData.response){
-          jsPsych.finishTrial(); // passe automatiquement après 4000ms
-        }
-      }, 4000);
-    },
+    on_start: () => resumeAudio(), 
     on_finish: data => {
       if(!data.response){
         data.correctness = 0;
@@ -144,58 +141,47 @@ function ABX_trial(trial_number, A, B) {
   return [trialA, trialB, trialX];
 }
 
-// Timeline setup
 const timeline = [participant_info, unlock_audio, instructions_es];
 
-fetch("stimuli.csv")
-  .then(r => r.text())
-  .then(text => {
+fetch("stimuli.csv").then(r=>r.text()).then(text=>{
+  let rows = text.trim().split("\n").slice(1).map(l=>{
+    const [A,B] = l.split(",");
+    return {A:A.trim(), B:B.trim()};
+  });
 
-    let rows = text.trim().split("\n").slice(1).map(l => {
-      const [A,B] = l.split(",");
-      return { A: A.trim(), B: B.trim() };
+  rows = jsPsych.randomization.shuffle(rows);
+
+  const nBlocks = 5;
+  const blockSize = Math.ceil(rows.length / nBlocks);
+
+  for(let i=0;i<nBlocks;i++){
+    const blockRows = rows.slice(i*blockSize,(i+1)*blockSize);
+
+    const audioFiles = [...new Set(blockRows.flatMap(r=>[`audio/${r.A}`,`audio/${r.B}`]))];
+    timeline.push({
+      type: jsPsychPreload,
+      audio: audioFiles,
+      show_progress_bar:true,
+      message:`<p>Chargement du bloc ${i+1} / ${nBlocks}…</p>`
     });
 
-    rows = jsPsych.randomization.shuffle(rows);
+    let trial_n = i*blockSize + 1;
+    blockRows.forEach(row=>{
+      timeline.push(...ABX_trial(trial_n,row.A,row.B));
+      trial_n++;
+    });
 
-    // Split into 5 blocks
-    const nBlocks = 5;
-    const blockSize = Math.ceil(rows.length / nBlocks);
-
-    for (let i = 0; i < nBlocks; i++) {
-      const blockRows = rows.slice(i*blockSize, (i+1)*blockSize);
-
-      // Preload unique audio for the block
-      const audioFiles = [...new Set(blockRows.flatMap(r => [`audio/${r.A}`, `audio/${r.B}`]))];
+    if(i<nBlocks-1){
       timeline.push({
-        type: jsPsychPreload,
-        audio: audioFiles,
-        show_progress_bar: true,
-        message: `<p>Chargement du bloc ${i+1} / ${nBlocks}…</p>`
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus:`<p>Fin du bloc ${i+1} / ${nBlocks}.</p>
+                  <p>Vous pouvez faire une courte pause.</p>
+                  <p><em>Appuyez sur une touche pour continuer.</em></p>`
       });
-
-      // Add ABX trials for this block
-      let trial_n = i*blockSize + 1;
-      blockRows.forEach(row => {
-        timeline.push(...ABX_trial(trial_n, row.A, row.B));
-        trial_n++;
-      });
-
-      // Short break after each block except last
-      if (i < nBlocks - 1) {
-        timeline.push({
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: `
-            <p>Fin du bloc ${i+1} / ${nBlocks}.</p>
-            <p>Vous pouvez faire une courte pause.</p>
-            <p><em>Appuyez sur une touche pour continuer.</em></p>
-          `
-        });
-      }
     }
+  }
 
-    timeline.push(end_screen);
+  timeline.push(end_screen);
 
-    jsPsych.run(timeline);
-  })
-  .catch(e => console.error("Erreur fetch stimuli.csv:", e));
+  jsPsych.run(timeline);
+}).catch(e=>console.error("Erreur fetch stimuli.csv:",e));
