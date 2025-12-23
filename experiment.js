@@ -5,7 +5,6 @@ const GOOGLE_SCRIPT_URL =
 
 const jsPsych = initJsPsych({
   on_finish: () => {
-
     const csv = jsPsych.data.get().csv();
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -53,8 +52,6 @@ const unlock_audio = {
   stimulus: "<p>Appuyez sur n’importe quelle touche du clavier pour activer l’audio.</p>"
 };
 
-
-
 const instructions_es = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: `
@@ -101,6 +98,18 @@ const instructions_es = {
 //   `
 // };
 
+const end_screen = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: "<h2>Merci pour votre participation !</h2>"
+};
+
+const resumeAudio = () => {
+  const ctx = jsPsych.pluginAPI.audioContext();
+  if (ctx && ctx.state === "suspended") {
+    return ctx.resume();
+  }
+};
+
 function ABX_trial(trial_number, A, B) {
 
   const X_is_A = Math.random() < 0.5;
@@ -108,53 +117,40 @@ function ABX_trial(trial_number, A, B) {
   const correct = X_is_A ? "f" : "j";
   const isi = 400;
 
-  return [
-
-    {
-      type: jsPsychAudioKeyboardResponse,
-      stimulus: `audio/${A}`,
-      choices: "NO_KEYS",
-      trial_ends_after_audio: true,
-      post_trial_gap: isi
-    },
-
-    {
-      type: jsPsychAudioKeyboardResponse,
-      stimulus: `audio/${B}`,
-      choices: "NO_KEYS",
-      trial_ends_after_audio: true,
-      post_trial_gap: isi
-    },
-
-    {
-      type: jsPsychAudioKeyboardResponse,
-      stimulus: `audio/${X}`,
-      choices: ["f", "j"],
-      prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
-      data: { trial_number, A, B, X, correct },
-      on_finish: d => {
-        d.correctness = d.response === correct ? 1 : 0;
-        d.rt_start = d.time_elapsed - d.rt;
-        d.rt_end = d.time_elapsed;
+  const makeAudioTrial = (filename, choices="NO_KEYS", prompt=null, on_finish_cb=null) => ({
+    type: jsPsychAudioKeyboardResponse,
+    stimulus: `audio/${filename}`,
+    choices: choices,
+    trial_ends_after_audio: true,
+    post_trial_gap: isi,
+    prompt: prompt,
+    on_start: resumeAudio,
+    on_finish: data => {
+      // Free memory
+      const ctx = jsPsych.pluginAPI.audioContext();
+      if (ctx && ctx._buffers) {
+        ctx._buffers.forEach(b => b = null);
       }
+      if (on_finish_cb) on_finish_cb(data);
     }
+  });
 
+  return [
+    makeAudioTrial(A),
+    makeAudioTrial(B),
+    makeAudioTrial(X, ["f","j"], "<p>F = A &nbsp;&nbsp; J = B</p>", d => {
+      d.correctness = d.response === correct ? 1 : 0;
+      d.rt_start = d.time_elapsed - d.rt;
+      d.rt_end = d.time_elapsed;
+    })
   ];
 }
-
-
-const end_screen = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: "<h2>Merci pour votre participation !</h2>"
-};
-
 
 const timeline = [participant_info, unlock_audio, instructions_es];
 
 fetch("stimuli.csv")
   .then(r => r.text())
   .then(text => {
-
     let rows = text.trim().split("\n").slice(1).map(l => {
       const [A,B] = l.split(",");
       return { A: A.trim(), B: B.trim() };
