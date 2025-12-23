@@ -110,8 +110,9 @@ function ABX_trial(trial_number, A, B) {
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${X}`,
     choices: ["f","j"],
-    trial_ends_after_audio: true,
-    trial_duration: 6000, // 🔴 Increased reply time to 6 s 🔴
+    trial_ends_after_audio: false,          
+    response_allowed_while_playing: true,   
+    trial_duration: 6000, 
     post_trial_gap: isi,
     prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
     on_start: () => resumeAudio(),
