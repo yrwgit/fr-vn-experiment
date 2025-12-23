@@ -108,7 +108,7 @@ fetch("stimuli.csv").then(r=>r.text()).then(text=>{
     const blockRows = rows.slice(i*blockSize,(i+1)*blockSize);
 
     // 🔴 précharge audio par bloc
-    const audioFiles = [...new Set(blockRows.flatMap(r=>[`audio/${r.A}`,`audio/${r.B}`]))];
+    const audioFiles = [...new Set(blockRows.flatMap(r=>[`/fr-vn-experiment/audio/${r.A}`,`/fr-vn-experiment/audio/${r.B}`]))];
     timeline.push({ type: jsPsychPreload, audio:audioFiles, show_progress_bar:true, message:`<p>Chargement du bloc ${i+1}/${nBlocks}…</p>` });
 
     let trial_n = i*blockSize + 1;
