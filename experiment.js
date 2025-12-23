@@ -154,18 +154,6 @@ function ABX_trial(trial_number, A, B) {
 }
 
 
-  return [
-    makeAudioTrial(A),
-    makeAudioTrial(B),
-    makeAudioTrial(X, ["f","j"], "<p>F = A &nbsp;&nbsp; J = B</p>", d => {
-      d.correctness = d.response === correct ? 1 : 0;
-      d.rt_start = d.time_elapsed - d.rt;
-      d.rt_end = d.time_elapsed;
-    })
-  ];
-}
-
-
 const timeline = [participant_info, unlock_audio, instructions_es];
 
 fetch("stimuli.csv")
