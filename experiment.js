@@ -89,39 +89,59 @@ const resumeAudio = () => {
   if (ctx && ctx.state === "suspended") ctx.resume();
 };
 
-// ABX trial generator
 function ABX_trial(trial_number, A, B) {
   const X_is_A = Math.random() < 0.5;
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
   const isi = 600;
 
-  const makeAudioTrial = (filename, choices="NO_KEYS", prompt=null, on_finish_cb=null) => ({
+  const trialA = {
     type: jsPsychAudioKeyboardResponse,
-    stimulus: `audio/${filename}`,
-    choices: choices,
+    stimulus: `audio/${A}`,
+    choices: "NO_KEYS",
     trial_ends_after_audio: true,
-    post_trial_gap: isi + 50,
-    prompt: prompt,
-    on_start: () => resumeAudio(),
-    on_finish: data => {
-      const ctx = jsPsych.pluginAPI.audioContext();
-      if (ctx && ctx._buffers) {
-        try { ctx._buffers.forEach(b => b=null); } catch(e) {}
-      }
-      if (on_finish_cb) on_finish_cb(data);
-    }
-  });
+    post_trial_gap: isi,
+    on_start: () => resumeAudio()
+  };
 
-  return [
-    makeAudioTrial(A),
-    makeAudioTrial(B),
-    makeAudioTrial(X, ["f","j"], "<p>F = A &nbsp;&nbsp; J = B</p>", d => {
-      d.correctness = d.response === correct ? 1 : 0;
-      d.rt_start = d.time_elapsed - d.rt;
-      d.rt_end = d.time_elapsed;
-    })
-  ];
+  const trialB = {
+    type: jsPsychAudioKeyboardResponse,
+    stimulus: `audio/${B}`,
+    choices: "NO_KEYS",
+    trial_ends_after_audio: true,
+    post_trial_gap: isi,
+    on_start: () => resumeAudio()
+  };
+
+  const trialX = {
+    type: jsPsychAudioKeyboardResponse,
+    stimulus: `audio/${X}`,
+    choices: ["f","j"],
+    trial_ends_after_audio: true,
+    post_trial_gap: isi,
+    prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
+    on_start: () => {
+      resumeAudio();
+      jsPsych.pluginAPI.setTimeout(() => {
+        const lastData = jsPsych.data.get().last(1).values()[0];
+        if(!lastData.response){
+          jsPsych.finishTrial(); // passe automatiquement après 4000ms
+        }
+      }, 4000);
+    },
+    on_finish: data => {
+      if(!data.response){
+        data.correctness = 0;
+        data.skipped = true;
+      } else {
+        data.correctness = data.response === correct ? 1 : 0;
+      }
+      data.rt_start = data.time_elapsed - data.rt;
+      data.rt_end = data.time_elapsed;
+    }
+  };
+
+  return [trialA, trialB, trialX];
 }
 
 // Timeline setup
