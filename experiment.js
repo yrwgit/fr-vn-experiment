@@ -104,24 +104,22 @@ const end_screen = {
 
 
 
-
 const resumeAudio = () => {
   const ctx = jsPsych.pluginAPI.audioContext();
   if (ctx && ctx.state === "suspended") ctx.resume();
 };
 
-// ABX trial generator
 function ABX_trial(trial_number, A, B) {
   const X_is_A = Math.random() < 0.5;
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
   const isi = 600; 
-
   const makeAudioTrial = (filename, choices="NO_KEYS", prompt=null, on_finish_cb=null) => ({
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${filename}`,
     choices: choices,
     trial_ends_after_audio: true,
+    trial_duration: 5000, 
     post_trial_gap: isi + 50, 
     prompt: prompt,
     on_start: () => resumeAudio(), 
@@ -131,6 +129,11 @@ function ABX_trial(trial_number, A, B) {
         try { ctx._buffers.forEach(b=>b=null); } catch(e) {}
       }
       if (on_finish_cb) on_finish_cb(data);
+
+      if (data.response === null) {
+        data.correctness = 0;
+        data.skipped = true;
+      }
     }
   });
 
@@ -144,8 +147,6 @@ function ABX_trial(trial_number, A, B) {
     })
   ];
 }
-
-
 
 const timeline = [participant_info, unlock_audio, instructions_es];
 
@@ -164,7 +165,17 @@ fetch("stimuli.csv")
     const blockSize = Math.ceil(rows.length / nBlocks);
 
     for (let i = 0; i < nBlocks; i++) {
+
       const blockRows = rows.slice(i*blockSize, (i+1)*blockSize);
+
+      timeline.push({
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: `
+          <p>Bloc ${i+1} / ${nBlocks}.</p>
+          <p>Répondez le plus vite possible. Si vous ne répondez pas, le trial suivant apparaîtra automatiquement.</p>
+          <p><em>Appuyez sur une touche pour commencer.</em></p>
+        `
+      });
 
       const audioFiles = [...new Set(blockRows.flatMap(r => [`audio/${r.A}`, `audio/${r.B}`]))];
       timeline.push({
