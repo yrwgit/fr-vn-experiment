@@ -26,7 +26,6 @@ const jsPsych = initJsPsych({
   }
 });
 
-
 const participant_info = {
   type: jsPsychSurveyHtmlForm,
   preamble: "<h2>Informations participant</h2>",
@@ -103,40 +102,33 @@ const end_screen = {
   stimulus: "<h2>Merci pour votre participation !</h2>"
 };
 
+
+
+
 const resumeAudio = () => {
   const ctx = jsPsych.pluginAPI.audioContext();
-  if (ctx && ctx.state === "suspended") {
-    return ctx.resume();
-  }
+  if (ctx && ctx.state === "suspended") ctx.resume();
 };
 
+// ABX trial generator
 function ABX_trial(trial_number, A, B) {
-
   const X_is_A = Math.random() < 0.5;
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
-
-  const isi = 600;  // A/B/X spacing
+  const isi = 600; 
 
   const makeAudioTrial = (filename, choices="NO_KEYS", prompt=null, on_finish_cb=null) => ({
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${filename}`,
     choices: choices,
     trial_ends_after_audio: true,
-
-    post_trial_gap: isi + 50, // 50 ms extra buffer
-
+    post_trial_gap: isi + 50, 
     prompt: prompt,
-
-    on_start: () => {
-      const ctx = jsPsych.pluginAPI.audioContext();
-      if (ctx && ctx.state === "suspended") ctx.resume();
-    },
-
+    on_start: () => resumeAudio(), 
     on_finish: data => {
       const ctx = jsPsych.pluginAPI.audioContext();
       if (ctx && ctx._buffers) {
-        try { ctx._buffers.forEach(b => b=null); } catch(e) {}
+        try { ctx._buffers.forEach(b=>b=null); } catch(e) {}
       }
       if (on_finish_cb) on_finish_cb(data);
     }
@@ -154,11 +146,13 @@ function ABX_trial(trial_number, A, B) {
 }
 
 
+
 const timeline = [participant_info, unlock_audio, instructions_es];
 
 fetch("stimuli.csv")
   .then(r => r.text())
   .then(text => {
+
     let rows = text.trim().split("\n").slice(1).map(l => {
       const [A,B] = l.split(",");
       return { A: A.trim(), B: B.trim() };
@@ -166,12 +160,40 @@ fetch("stimuli.csv")
 
     rows = jsPsych.randomization.shuffle(rows);
 
-    let trial_n = 1;
-    rows.forEach(row => {
-      timeline.push(...ABX_trial(trial_n, row.A, row.B));
-      trial_n++;
-    });
+    const nBlocks = 5;
+    const blockSize = Math.ceil(rows.length / nBlocks);
+
+    for (let i = 0; i < nBlocks; i++) {
+      const blockRows = rows.slice(i*blockSize, (i+1)*blockSize);
+
+      const audioFiles = [...new Set(blockRows.flatMap(r => [`audio/${r.A}`, `audio/${r.B}`]))];
+      timeline.push({
+        type: jsPsychPreload,
+        audio: audioFiles,
+        show_progress_bar: true,
+        message: `<p>Chargement du bloc ${i+1} / ${nBlocks}…</p>`
+      });
+
+      let trial_n = i*blockSize + 1;
+      blockRows.forEach(row => {
+        timeline.push(...ABX_trial(trial_n, row.A, row.B));
+        trial_n++;
+      });
+
+      if (i < nBlocks - 1) {
+        timeline.push({
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `
+            <p>Fin du bloc ${i+1} / ${nBlocks}.</p>
+            <p>Vous pouvez faire une courte pause.</p>
+            <p><em>Appuyez sur une touche pour continuer.</em></p>
+          `
+        });
+      }
+    }
 
     timeline.push(end_screen);
+
     jsPsych.run(timeline);
-  });
+  })
+  .catch(e => console.error("Erreur fetch stimuli.csv:", e));
