@@ -69,8 +69,8 @@ function ABX_trial(trial_number, A, B) {
   const correct = X_is_A ? "f" : "j";
   const isi = 300;
 
-  const trialA = { type: jsPsychAudioKeyboardResponse, stimulus: `audio/${A}`, choices:"NO_KEYS", trial_ends_after_audio:true, post_trial_gap:isi, on_start:()=>resumeAudio() };
-  const trialB = { type: jsPsychAudioKeyboardResponse, stimulus: `audio/${B}`, choices:"NO_KEYS", trial_ends_after_audio:true, post_trial_gap:isi, on_start:()=>resumeAudio() };
+  const trialA = { type: jsPsychAudioKeyboardResponse, stimulus: `/fr-vn-experiment/audio/${A}`, choices:"NO_KEYS", trial_ends_after_audio:true, post_trial_gap:isi, on_start:()=>resumeAudio() };
+  const trialB = { type: jsPsychAudioKeyboardResponse, stimulus: `/fr-vn-experiment/audio/${B}`, choices:"NO_KEYS", trial_ends_after_audio:true, post_trial_gap:isi, on_start:()=>resumeAudio() };
   const trialX = {
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${X}`,
