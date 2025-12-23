@@ -83,7 +83,7 @@ const end_screen = {
   stimulus: "<h2>Merci pour votre participation !</h2>"
 };
 
-// 🔴 Resume AudioContext helper (new) 🔴
+// Resume AudioContext helper
 const resumeAudio = () => {
   const ctx = jsPsych.pluginAPI.audioContext();
   if (ctx && ctx.state === "suspended") ctx.resume();
@@ -94,21 +94,20 @@ function ABX_trial(trial_number, A, B) {
   const X_is_A = Math.random() < 0.5;
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
-  const isi = 600; // 🔴 Increased inter-stimulus interval 🔴
+  const isi = 600;
 
   const makeAudioTrial = (filename, choices="NO_KEYS", prompt=null, on_finish_cb=null) => ({
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${filename}`,
     choices: choices,
     trial_ends_after_audio: true,
-    post_trial_gap: isi + 50, // 🔴 extra buffer instead of async pre-play delay 🔴
+    post_trial_gap: isi + 50,
     prompt: prompt,
-    on_start: () => resumeAudio(), // 🔴 synchronous resume AudioContext 🔴
+    on_start: () => resumeAudio(),
     on_finish: data => {
-      // 🔴 safe memory cleanup 🔴
       const ctx = jsPsych.pluginAPI.audioContext();
       if (ctx && ctx._buffers) {
-        try { ctx._buffers.forEach(b=>b=null); } catch(e) {}
+        try { ctx._buffers.forEach(b => b=null); } catch(e) {}
       }
       if (on_finish_cb) on_finish_cb(data);
     }
@@ -125,7 +124,7 @@ function ABX_trial(trial_number, A, B) {
   ];
 }
 
-// 🔴 Timeline setup with block-based preload 🔴
+// Timeline setup
 const timeline = [participant_info, unlock_audio, instructions_es];
 
 fetch("stimuli.csv")
@@ -139,14 +138,14 @@ fetch("stimuli.csv")
 
     rows = jsPsych.randomization.shuffle(rows);
 
-    // 🔴 5 blocks 🔴
+    // Split into 5 blocks
     const nBlocks = 5;
     const blockSize = Math.ceil(rows.length / nBlocks);
 
     for (let i = 0; i < nBlocks; i++) {
       const blockRows = rows.slice(i*blockSize, (i+1)*blockSize);
 
-      // 🔴 Block-level preload of all unique audio 🔴
+      // Preload unique audio for the block
       const audioFiles = [...new Set(blockRows.flatMap(r => [`audio/${r.A}`, `audio/${r.B}`]))];
       timeline.push({
         type: jsPsychPreload,
@@ -155,14 +154,14 @@ fetch("stimuli.csv")
         message: `<p>Chargement du bloc ${i+1} / ${nBlocks}…</p>`
       });
 
-      // 🔴 Add ABX trials for this block 🔴
+      // Add ABX trials for this block
       let trial_n = i*blockSize + 1;
       blockRows.forEach(row => {
         timeline.push(...ABX_trial(trial_n, row.A, row.B));
         trial_n++;
       });
 
-      // 🔴 Short break after each block except last 🔴
+      // Short break after each block except last
       if (i < nBlocks - 1) {
         timeline.push({
           type: jsPsychHtmlKeyboardResponse,
