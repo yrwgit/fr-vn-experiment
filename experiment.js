@@ -3,6 +3,7 @@ const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx_14EQfLDzNXf6cWppZvFoo6SfpEpRAZCH9SNx31degMFvUB3ZJqiJSFAJiCsBpr_g/exec";
 
 
+
 const jsPsych = initJsPsych({
   on_finish: () => {
     const csv = jsPsych.data.get().csv();
@@ -45,7 +46,6 @@ const participant_info = {
   }
 };
 
-
 const unlock_audio = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: "<p>Appuyez sur n’importe quelle touche du clavier pour activer l’audio.</p>"
@@ -63,7 +63,6 @@ const instructions_es = {
         <li><strong>X</strong>: tercero sonido (comparar con A / B)</li>
       </ol>
       <p>A y B son distintos. Tienes que elegir si X (el ultimo sonido) es el sonido A o B</p>
-      <p>ejemplo: (A) "lo" (B) "la" (X) "lo" => X = A o B?</p>
       <p>Como hacer?</p>
       <ul>
         <li>Tocar <strong>F</strong> si X=A</li>
@@ -75,34 +74,10 @@ const instructions_es = {
   `
 };
 
-// const instructions = {
-//   type: jsPsychHtmlKeyboardResponse,
-//   stimulus: `
-//     <div style="max-width:700px; margin:auto; font-family:Arial, sans-serif; line-height:1.6;">
-//       <h2 style="text-align:center; color:#2c3e50;">Instructions de l'expérience ABX</h2>
-//       <p>Vous allez entendre trois sons à chaque essai :</p>
-//       <ol>
-//         <li><strong>A</strong> — premier son</li>
-//         <li><strong>B</strong> — deuxième son</li>
-//         <li><strong>X</strong> — à comparer avec A ou B</li>
-//       </ol>
-//       <p>Tâche :</p>
-//       <ul>
-//         <li>Appuyez sur <strong>F</strong> si X = A</li>
-//         <li>Appuyez sur <strong>J</strong> si X = B</li>
-//       </ul>
-//       <p><strong>Important :</strong> utilisez un casque et soyez dans un endroit calme.</p>
-//       <p style="text-align:center; font-style:italic;">Appuyez sur n’importe quelle touche du clavier pour commencer.</p>
-//     </div>
-//   `
-// };
-
 const end_screen = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: "<h2>Merci pour votre participation !</h2>"
 };
-
-
 
 const resumeAudio = () => {
   const ctx = jsPsych.pluginAPI.audioContext();
@@ -114,6 +89,7 @@ function ABX_trial(trial_number, A, B) {
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
   const isi = 600; 
+
   const makeAudioTrial = (filename, choices="NO_KEYS", prompt=null, on_finish_cb=null) => ({
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${filename}`,
