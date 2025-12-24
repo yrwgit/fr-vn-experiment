@@ -141,12 +141,34 @@ fetch("stimuli.csv")
     });
 
     const shuffled = jsPsych.randomization.shuffle(rows);
-    shuffled.forEach(row => {
-      timeline.push(...ABX_trial(row.A, row.B));
-    });
+
+    const nBlocks = 5;
+    const blockSize = Math.ceil(shuffled.length / nBlocks);
+
+    for (let i = 0; i < nBlocks; i++) {
+      const blockRows = shuffled.slice(i * blockSize, (i + 1) * blockSize);
+
+      const audioFiles = [...new Set(blockRows.flatMap(r => [`audio/${r.A}`, `audio/${r.B}`]))];
+      timeline.push({
+        type: jsPsychPreload,
+        audio: audioFiles,
+        show_progress_bar: true,
+        message: `<p>Chargement du bloc ${i + 1} / ${nBlocks}…</p>`
+      });
+
+      blockRows.forEach(row => {
+        timeline.push(...ABX_trial(row.A, row.B));
+      });
+
+      if (i < nBlocks - 1) {
+        timeline.push({
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `<p>Fin du bloc ${i + 1} / ${nBlocks}. Faites une courte pause et appuyez sur n’importe quelle touche pour continuer.</p>`
+        });
+      }
+    }
 
     timeline.push(end_screen);
-
     jsPsych.run(timeline);
   })
   .catch(e => console.error("Erreur fetch stimuli.csv:", e));
