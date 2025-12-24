@@ -44,7 +44,7 @@ const unlock_audio = {
   stimulus: "<p>Appuyez sur n’importe quelle touche du clavier pour activer l’audio.</p>",
   on_finish: () => {
     const ctx = jsPsych.pluginAPI.audioContext();
-    if (ctx && ctx.state === "suspended") ctx.resume();
+    if(ctx && ctx.state === "suspended") ctx.resume();
   }
 };
 
@@ -92,7 +92,7 @@ function ABX_trial(A, B) {
       post_trial_gap: isi,
       on_start: () => {
         const ctx = jsPsych.pluginAPI.audioContext();
-        if (ctx && ctx.state === "suspended") ctx.resume();
+        if(ctx && ctx.state === "suspended") ctx.resume();
       }
     },
     {
@@ -103,23 +103,23 @@ function ABX_trial(A, B) {
       post_trial_gap: isi,
       on_start: () => {
         const ctx = jsPsych.pluginAPI.audioContext();
-        if (ctx && ctx.state === "suspended") ctx.resume();
+        if(ctx && ctx.state === "suspended") ctx.resume();
       }
     },
     {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${X}`,
       choices: ["f","j"],
-      trial_ends_after_audio: false,
+      trial_ends_after_audio: false, // 🔴 pas de limite de temps
       response_allowed_while_playing: true,
       post_trial_gap: isi,
       prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
       on_start: () => {
         const ctx = jsPsych.pluginAPI.audioContext();
-        if (ctx && ctx.state === "suspended") ctx.resume();
+        if(ctx && ctx.state === "suspended") ctx.resume();
       },
       on_finish: data => {
-        if (!data.response) {
+        if(!data.response){
           data.correctness = 0;
           data.skipped = true;
         } else {
@@ -137,33 +137,31 @@ fetch("stimuli.csv")
   .then(text => {
     const rows = text.trim().split("\n").slice(1).map(l => {
       const [A, B] = l.split(",");
-      return { A: A.trim(), B: B.trim() };
+      return {A:A.trim(), B:B.trim()};
     });
 
     const shuffled = jsPsych.randomization.shuffle(rows);
-
     const nBlocks = 5;
     const blockSize = Math.ceil(shuffled.length / nBlocks);
 
-    for (let i = 0; i < nBlocks; i++) {
-      const blockRows = shuffled.slice(i * blockSize, (i + 1) * blockSize);
-
-      const audioFiles = [...new Set(blockRows.flatMap(r => [`audio/${r.A}`, `audio/${r.B}`]))];
+    for(let i=0;i<nBlocks;i++){
+      const blockRows = shuffled.slice(i*blockSize,(i+1)*blockSize);
+      const audioFiles = [...new Set(blockRows.flatMap(r=>[`audio/${r.A}`,`audio/${r.B}`]))];
       timeline.push({
         type: jsPsychPreload,
         audio: audioFiles,
         show_progress_bar: true,
-        message: `<p>Chargement du bloc ${i + 1} / ${nBlocks}…</p>`
+        message: `<p>Chargement du bloc ${i+1} / ${nBlocks}…</p>`
       });
 
-      blockRows.forEach(row => {
-        timeline.push(...ABX_trial(row.A, row.B));
+      blockRows.forEach(row=>{
+        timeline.push(...ABX_trial(row.A,row.B));
       });
 
-      if (i < nBlocks - 1) {
+      if(i<nBlocks-1){
         timeline.push({
           type: jsPsychHtmlKeyboardResponse,
-          stimulus: `<p>Fin du bloc ${i + 1} / ${nBlocks}. Faites une courte pause et appuyez sur n’importe quelle touche pour continuer.</p>`
+          stimulus: `<p>Fin du bloc ${i+1} / ${nBlocks}. Faites une courte pause et appuyez sur n’importe quelle touche pour continuer.</p>`
         });
       }
     }
