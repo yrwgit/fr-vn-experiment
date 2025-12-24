@@ -88,6 +88,11 @@ function ABX_trial(trial_number, A, B) {
   const correct = X_is_A ? "f" : "j";
   const isi = 300;
 
+  const preloadTrial = {
+    type: jsPsychPreload,
+    audio: [`audio/${A}`, `audio/${B}`, `audio/${X}`]
+  };
+
   const trialA = {
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${A}`,
@@ -110,9 +115,9 @@ function ABX_trial(trial_number, A, B) {
     type: jsPsychAudioKeyboardResponse,
     stimulus: `audio/${X}`,
     choices: ["f","j"],
-    trial_ends_after_audio: false,          
-    response_allowed_while_playing: true,   
-    trial_duration: 10000, 
+    trial_ends_after_audio: false,
+    response_allowed_while_playing: true,
+    trial_duration: 10000,
     post_trial_gap: isi,
     prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
     on_start: () => resumeAudio(),
@@ -128,7 +133,7 @@ function ABX_trial(trial_number, A, B) {
     }
   };
 
-  return [trialA, trialB, trialX];
+  return [preloadTrial, trialA, trialB, trialX];
 }
 
 const timeline = [participant_info, instructions_es, unlock_audio];
@@ -147,22 +152,13 @@ fetch("./stimuli.csv").then(r => r.text()).then(text => {
   for(let i = 0; i < nBlocks; i++){
     const blockRows = rows.slice(i*blockSize, (i+1)*blockSize);
 
-    const xFiles = [...new Set(blockRows.map(row => Math.random()<0.5 ? `audio/${row.A}` : `audio/${row.B}`))];
-    timeline.push({
-      type: jsPsychPreload,
-      audio: xFiles,
-      show_progress_bar: true,
-      message: `<p>Chargement du bloc ${i+1}/${nBlocks}…</p>`,
-      error_callback: file => console.warn("Failed to load:", file)
-    });
-
     let trial_n = i*blockSize + 1;
     blockRows.forEach(row => {
       timeline.push(...ABX_trial(trial_n, row.A, row.B));
       trial_n++;
     });
 
-    if(i < nBlocks-1){
+    if(i < nBlocks - 1){
       timeline.push({
         type: jsPsychHtmlKeyboardResponse,
         stimulus: `<p>Fin du bloc ${i+1}/${nBlocks}.<br>Vous pouvez faire une courte pause.</p>
