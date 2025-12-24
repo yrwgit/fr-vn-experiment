@@ -73,6 +73,7 @@ const instructions_es = {
   `
 };
 
+
 const end_screen = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: "<h2>Merci pour votre participation !</h2>"
