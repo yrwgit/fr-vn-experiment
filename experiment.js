@@ -78,32 +78,43 @@ function ABX_trial(A, B) {
   const X_is_A = Math.random() < 0.5;
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
+  const isi = 300;
 
   return [
     {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${A}`,
       choices: "NO_KEYS",
-      trial_ends_after_audio: true
+      trial_ends_after_audio: true,
+      post_trial_gap: isi
     },
     {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${B}`,
       choices: "NO_KEYS",
-      trial_ends_after_audio: true
+      trial_ends_after_audio: true,
+      post_trial_gap: isi
     },
     {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${X}`,
       choices: ["f", "j"],
       response_allowed_while_playing: true,
+      trial_duration: 6000,
       prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
       on_finish: data => {
-        data.correctness = data.response === correct ? 1 : 0;
+        if (data.response === null) {
+          data.correctness = 0;
+          data.skipped = true;
+        } else {
+          data.correctness = data.response === correct ? 1 : 0;
+          data.skipped = false;
+        }
       }
     }
   ];
 }
+
 
 const timeline = [participant_info, unlock_audio, instructions_es];
 
