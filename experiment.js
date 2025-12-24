@@ -1,5 +1,4 @@
-const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx_14EQfLDzNXf6cWppZvFoo6SfpEpRAZCH9SNx31degMFvUB3ZJqiJSFAJiCsBpr_g/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_14EQfLDzNXf6cWppZvFoo6SfpEpRAZCH9SNx31degMFvUB3ZJqiJSFAJiCsBpr_g/exec";
 
 const jsPsych = initJsPsych({
   on_finish: () => {
@@ -17,7 +16,7 @@ const jsPsych = initJsPsych({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(jsPsych.data.get().values())
-    });
+    }).catch(err => console.error("Erreur envoi données:", err));
   }
 });
 
@@ -73,15 +72,9 @@ const instructions_es = {
   `
 };
 
-
 const end_screen = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: "<h2>Merci pour votre participation !</h2>"
-};
-
-const resumeAudio = () => {
-  const ctx = jsPsych.pluginAPI.audioContext();
-  if (ctx && ctx.state === "suspended") ctx.resume();
 };
 
 function ABX_trial(A, B) {
@@ -97,7 +90,10 @@ function ABX_trial(A, B) {
       choices: "NO_KEYS",
       trial_ends_after_audio: true,
       post_trial_gap: isi,
-      on_start: resumeAudio
+      on_start: () => {
+        const ctx = jsPsych.pluginAPI.audioContext();
+        if (ctx && ctx.state === "suspended") ctx.resume();
+      }
     },
     {
       type: jsPsychAudioKeyboardResponse,
@@ -105,17 +101,23 @@ function ABX_trial(A, B) {
       choices: "NO_KEYS",
       trial_ends_after_audio: true,
       post_trial_gap: isi,
-      on_start: resumeAudio
+      on_start: () => {
+        const ctx = jsPsych.pluginAPI.audioContext();
+        if (ctx && ctx.state === "suspended") ctx.resume();
+      }
     },
     {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${X}`,
       choices: ["f","j"],
-      trial_duration: 5000,
+      trial_ends_after_audio: true,
       response_allowed_while_playing: true,
       post_trial_gap: isi,
       prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
-      on_start: resumeAudio,
+      on_start: () => {
+        const ctx = jsPsych.pluginAPI.audioContext();
+        if (ctx && ctx.state === "suspended") ctx.resume();
+      },
       on_finish: data => {
         if (!data.response) {
           data.correctness = 0;
@@ -133,17 +135,18 @@ const timeline = [participant_info, unlock_audio, instructions_es];
 fetch("stimuli.csv")
   .then(r => r.text())
   .then(text => {
-    let rows = text.trim().split("\n").slice(1).map(l => {
+    const rows = text.trim().split("\n").slice(1).map(l => {
       const [A, B] = l.split(",");
       return { A: A.trim(), B: B.trim() };
     });
 
-    rows = jsPsych.randomization.shuffle(rows);
-
-    rows.forEach(row => {
+    const shuffled = jsPsych.randomization.shuffle(rows);
+    shuffled.forEach(row => {
       timeline.push(...ABX_trial(row.A, row.B));
     });
 
     timeline.push(end_screen);
+
     jsPsych.run(timeline);
-  });
+  })
+  .catch(e => console.error("Erreur fetch stimuli.csv:", e));
