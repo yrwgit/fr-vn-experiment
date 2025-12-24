@@ -50,7 +50,7 @@ const unlock_audio = {
 };
 
 const instructions_es = {
-  type: jsPsychHtmlButtonResponse,
+  type: jsPsychHtmlKeyboardResponse,
   stimulus: `
     <div style="max-width:700px; margin:auto; font-family:Arial, sans-serif; line-height:1.6;">
       <h2 style="text-align:center; color:#2c3e50;">Instrucciones del experimento ABX</h2>
@@ -68,11 +68,10 @@ const instructions_es = {
         <li>Tocar <strong>J</strong> si X=B</li>
       </ul>
       <p><strong>importante:</strong> usar un caso y estar en un lugar silencioso</p>
+      <p style="text-align:center; font-style:italic;">tocar cualquiera tecla del teclado para empezar</p>
     </div>
-  `,
-  choices: ["Empezar"]
+  `
 };
-
 
 const end_screen = {
   type: jsPsychHtmlKeyboardResponse,
@@ -111,7 +110,8 @@ function ABX_trial(A, B) {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${X}`,
       choices: ["f","j"],
-      trial_duration: 7000,
+      trial_duration: 10000,
+      response_allowed_while_playing: true,
       post_trial_gap: isi,
       prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
       on_start: resumeAudio,
