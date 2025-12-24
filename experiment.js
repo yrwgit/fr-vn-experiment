@@ -77,7 +77,7 @@ const end_screen = {
   stimulus: "<h2>Merci pour votre participation !</h2>"
 };
 
-function ABX_trial(A, B) {
+function ABX_trial(A, B, nextAudioFiles=[]) {
   const X_is_A = Math.random() < 0.5;
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
@@ -110,13 +110,18 @@ function ABX_trial(A, B) {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${X}`,
       choices: ["f","j"],
-      trial_ends_after_audio: false, // 🔴 pas de limite de temps
+      trial_ends_after_audio: false,
       response_allowed_while_playing: true,
       post_trial_gap: isi,
       prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
       on_start: () => {
         const ctx = jsPsych.pluginAPI.audioContext();
         if(ctx && ctx.state === "suspended") ctx.resume();
+
+        // précharge la prochaine trial en arrière-plan
+        if(nextAudioFiles.length>0){
+          jsPsych.pluginAPI.preloadAudioFiles(nextAudioFiles);
+        }
       },
       on_finish: data => {
         if(!data.response){
@@ -141,29 +146,12 @@ fetch("stimuli.csv")
     });
 
     const shuffled = jsPsych.randomization.shuffle(rows);
-    const nBlocks = 5;
-    const blockSize = Math.ceil(shuffled.length / nBlocks);
 
-    for(let i=0;i<nBlocks;i++){
-      const blockRows = shuffled.slice(i*blockSize,(i+1)*blockSize);
-      const audioFiles = [...new Set(blockRows.flatMap(r=>[`audio/${r.A}`,`audio/${r.B}`]))];
-      timeline.push({
-        type: jsPsychPreload,
-        audio: audioFiles,
-        show_progress_bar: true,
-        message: `<p>Chargement du bloc ${i+1} / ${nBlocks}…</p>`
-      });
-
-      blockRows.forEach(row=>{
-        timeline.push(...ABX_trial(row.A,row.B));
-      });
-
-      if(i<nBlocks-1){
-        timeline.push({
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: `<p>Fin du bloc ${i+1} / ${nBlocks}. Faites une courte pause et appuyez sur n’importe quelle touche pour continuer.</p>`
-        });
-      }
+    for(let i=0;i<shuffled.length;i++){
+      const row = shuffled[i];
+      const nextRow = shuffled[i+1];
+      const nextAudio = nextRow ? [`audio/${nextRow.A}`, `audio/${nextRow.B}`] : [];
+      timeline.push(...ABX_trial(row.A, row.B, nextAudio));
     }
 
     timeline.push(end_screen);
