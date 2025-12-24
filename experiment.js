@@ -1,14 +1,29 @@
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbwxvAHQjmgMQpNCwPUo7vpU6WrooRsa7sJuZGNtcCrHORs0CVF0e-tV9PmB2dWSltoh/exec";
 
+
 const jsPsych = initJsPsych({
   on_finish: () => {
+    // Export CSV localement si tu veux
+    const csv = jsPsych.data.get().csv();
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ABX_results.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // 🔴 Envoi à Google Sheet
     fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(jsPsych.data.get().values()),
-      keepalive: true
-    });
+      body: JSON.stringify(jsPsych.data.get().values())
+    })
+    .then(response => response.json())
+    .then(r => console.log("Envoi OK:", r))
+    .catch(err => console.error("Erreur envoi données:", err));
   }
 });
 
