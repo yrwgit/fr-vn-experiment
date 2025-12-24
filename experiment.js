@@ -3,23 +3,15 @@ const GOOGLE_SCRIPT_URL =
 
 const jsPsych = initJsPsych({
   on_finish: () => {
-    const csv = jsPsych.data.get().csv();
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ABX_results.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
     fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(jsPsych.data.get().values())
+      body: JSON.stringify(jsPsych.data.get().values()),
+      keepalive: true
     });
   }
 });
+
 
 const participant_info = {
   type: jsPsychSurveyHtmlForm,
