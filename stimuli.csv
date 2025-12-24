@@ -43,10 +43,10 @@ vend_H.mp3,va_H.mp3
 va_H.mp3,vend_H.mp3
 vend_F.mp3,va_F.mp3
 va_F.mp3,vend_F.mp3
-cent_H.mp3,ça_H.mp3
-ça_H.mp3,cent_H.mp3
-cent_F.mp3,ça_F.mp3
-ça_F.mp3,cent_F.mp3
+cent_H.mp3,ca_H.mp3
+ca_H.mp3,cent_H.mp3
+cent_F.mp3,ca_F.mp3
+ca_F.mp3,cent_F.mp3
 cent_H.mp3,son_H.mp3
 son_H.mp3,cent_H.mp3
 cent_F.mp3,son_F.mp3
@@ -195,3 +195,4 @@ tais_H.mp3,the_H.mp3
 the_H.mp3,tais_H.mp3
 tais_F.mp3,the_F.mp3
 the_F.mp3,tais_F.mp3
+
