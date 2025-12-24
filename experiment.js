@@ -1,4 +1,5 @@
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_14EQfLDzNXf6cWppZvFoo6SfpEpRAZCH9SNx31degMFvUB3ZJqiJSFAJiCsBpr_g/exec";
+const GOOGLE_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbx_14EQfLDzNXf6cWppZvFoo6SfpEpRAZCH9SNx31degMFvUB3ZJqiJSFAJiCsBpr_g/exec";
 
 const jsPsych = initJsPsych({
   on_finish: () => {
@@ -16,7 +17,7 @@ const jsPsych = initJsPsych({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(jsPsych.data.get().values())
-    }).catch(err => console.error("Erreur envoi données:", err));
+    });
   }
 });
 
@@ -41,11 +42,7 @@ const participant_info = {
 
 const unlock_audio = {
   type: jsPsychHtmlKeyboardResponse,
-  stimulus: "<p>Appuyez sur n’importe quelle touche du clavier pour activer l’audio.</p>",
-  on_finish: () => {
-    const ctx = jsPsych.pluginAPI.audioContext();
-    if(ctx && ctx.state === "suspended") ctx.resume();
-  }
+  stimulus: "<p>Appuyez sur n’importe quelle touche du clavier pour activer l’audio.</p>"
 };
 
 const instructions_es = {
@@ -67,7 +64,7 @@ const instructions_es = {
         <li>Tocar <strong>J</strong> si X=B</li>
       </ul>
       <p><strong>importante:</strong> usar un caso y estar en un lugar silencioso</p>
-      <p style="text-align:center; font-style:italic;">tocar cualquiera tecla del teclado para empezar</p>
+      <p style="text-align:center; font-style:italic;">tocar n'importe quelle touche du clavier para empezar</p>
     </div>
   `
 };
@@ -77,59 +74,32 @@ const end_screen = {
   stimulus: "<h2>Merci pour votre participation !</h2>"
 };
 
-function ABX_trial(A, B, nextAudioFiles=[]) {
+function ABX_trial(A, B) {
   const X_is_A = Math.random() < 0.5;
   const X = X_is_A ? A : B;
   const correct = X_is_A ? "f" : "j";
-  const isi = 300;
 
   return [
     {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${A}`,
       choices: "NO_KEYS",
-      trial_ends_after_audio: true,
-      post_trial_gap: isi,
-      on_start: () => {
-        const ctx = jsPsych.pluginAPI.audioContext();
-        if(ctx && ctx.state === "suspended") ctx.resume();
-      }
+      trial_ends_after_audio: true
     },
     {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${B}`,
       choices: "NO_KEYS",
-      trial_ends_after_audio: true,
-      post_trial_gap: isi,
-      on_start: () => {
-        const ctx = jsPsych.pluginAPI.audioContext();
-        if(ctx && ctx.state === "suspended") ctx.resume();
-      }
+      trial_ends_after_audio: true
     },
     {
       type: jsPsychAudioKeyboardResponse,
       stimulus: `audio/${X}`,
-      choices: ["f","j"],
-      trial_ends_after_audio: false,
+      choices: ["f", "j"],
       response_allowed_while_playing: true,
-      post_trial_gap: isi,
       prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
-      on_start: () => {
-        const ctx = jsPsych.pluginAPI.audioContext();
-        if(ctx && ctx.state === "suspended") ctx.resume();
-
-        // précharge la prochaine trial en arrière-plan
-        if(nextAudioFiles.length>0){
-          jsPsych.pluginAPI.preloadAudioFiles(nextAudioFiles);
-        }
-      },
       on_finish: data => {
-        if(!data.response){
-          data.correctness = 0;
-          data.skipped = true;
-        } else {
-          data.correctness = data.response === correct ? 1 : 0;
-        }
+        data.correctness = data.response === correct ? 1 : 0;
       }
     }
   ];
@@ -142,19 +112,13 @@ fetch("stimuli.csv")
   .then(text => {
     const rows = text.trim().split("\n").slice(1).map(l => {
       const [A, B] = l.split(",");
-      return {A:A.trim(), B:B.trim()};
+      return { A: A.trim(), B: B.trim() };
     });
 
-    const shuffled = jsPsych.randomization.shuffle(rows);
-
-    for(let i=0;i<shuffled.length;i++){
-      const row = shuffled[i];
-      const nextRow = shuffled[i+1];
-      const nextAudio = nextRow ? [`audio/${nextRow.A}`, `audio/${nextRow.B}`] : [];
-      timeline.push(...ABX_trial(row.A, row.B, nextAudio));
-    }
+    jsPsych.randomization.shuffle(rows).forEach(row => {
+      timeline.push(...ABX_trial(row.A, row.B));
+    });
 
     timeline.push(end_screen);
     jsPsych.run(timeline);
-  })
-  .catch(e => console.error("Erreur fetch stimuli.csv:", e));
+  });
