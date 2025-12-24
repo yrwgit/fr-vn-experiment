@@ -63,7 +63,10 @@ const instructions_es = {
 
 const end_screen = {
   type: jsPsychHtmlKeyboardResponse,
-  stimulus: "<h2>Merci pour votre participation !</h2>"
+  stimulus: `
+    <h2>Merci pour votre participation !</h2>
+    <p>Vous pouvez maintenant fermer cette page.</p>
+  `
 };
 
 function ABX_trial(A, B) {
