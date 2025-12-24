@@ -61,6 +61,7 @@ const instructions_es = {
         <li><strong>X</strong>: tercero sonido (comparar con A / B)</li>
       </ol>
       <p>A y B son distintos. Tienes que elegir si X (el ultimo sonido) es el sonido A o B</p>
+      <p>ejemplo: (A) "lo" (B) "la" (X) "lo" => X = A o B?</p>
       <p>Como hacer?</p>
       <ul>
         <li>Tocar <strong>F</strong> si X=A</li>
