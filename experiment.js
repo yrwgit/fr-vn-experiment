@@ -1,5 +1,5 @@
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbz5egJZsie9X36N7MyRPW_-q0CFhf5FDZPkP3O8PB3iL5U8Pwt_bZ22BMFIqf6KQ4tF/exec";
+  "https://script.google.com/macros/s/AKfycbwtOgtnPHB-cJfGPr7hGq8pdn20wYYLbvoZ8qyzdxpzgKd_ZvKFeQiG7_OLvxiL6G4G/exec";
 
 
 const jsPsych = initJsPsych({
