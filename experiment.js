@@ -4,7 +4,8 @@ const GOOGLE_SCRIPT_URL =
 
 const jsPsych = initJsPsych({
   on_finish: () => {
-    // Export CSV localement si tu veux
+
+    // 1) Local CSV backup (OK to keep)
     const csv = jsPsych.data.get().csv();
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -15,13 +16,19 @@ const jsPsych = initJsPsych({
     a.click();
     document.body.removeChild(a);
 
+    // 2) Send data to Google Sheets (CORS-safe)
     fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain"
+      },
       body: JSON.stringify(jsPsych.data.get().values())
-    })
+    });
+
   }
 });
+
 
 
 const participant_info = {
