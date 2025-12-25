@@ -15,7 +15,7 @@ const jsPsych = initJsPsych({
     a.click();
     document.body.removeChild(a);
 
-    // 🔴 Envoi à Google Sheet
+    // 🔴 Envoi à Google Sheet    
     fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
