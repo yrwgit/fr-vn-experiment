@@ -15,15 +15,11 @@ const jsPsych = initJsPsych({
     a.click();
     document.body.removeChild(a);
 
-    // 🔴 Envoi à Google Sheet    
     fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(jsPsych.data.get().values())
     })
-    .then(response => response.json())
-    .then(r => console.log("Envoi OK:", r))
-    .catch(err => console.error("Erreur envoi données:", err));
   }
 });
 
