@@ -1,5 +1,5 @@
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzP2R3IndybC5DM2jVfczJu0kKDw6X77oCcTNJ-uvzKzaqVRHFlFJRHpGiIxMHwaGKb/exec";
+  "https://script.google.com/macros/s/AKfycbzZ7PK15YGxr7we2CckcjreMOyOYMKb-HCAk88tUdy2Fy31j_zE3foy3iHlN8fbH_st/exec";
 
 
 const jsPsych = initJsPsych({
@@ -19,12 +19,9 @@ const jsPsych = initJsPsych({
     // 2) Send data to Google Sheets (CORS-safe)
     fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(jsPsych.data.get().values())
-    });
+  });
 
   }
 });
