@@ -110,7 +110,7 @@ function ABX_trial(A, B) {
       stimulus: `audio/${X}`,
       choices: ["f", "j"],
       response_allowed_while_playing: true,
-      trial_duration: 6000,
+      trial_duration: 10000,
       prompt: "<p>F = A &nbsp;&nbsp; J = B</p>",
       on_finish: data => {
         if (data.response === null) {
